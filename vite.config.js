@@ -21,6 +21,7 @@ export default defineConfig({
       userscript: {
         name: 'backpack tool',
         description: 'backpack script 刷成交量脚本,支持手动开启关闭,设置买入卖出点',
+        author: 'zhowiny',
         namespace: 'https://github.com/zhowiny',
         icon: 'https://backpack.exchange/favicon-32x32.png',
         match: ['https://backpack.exchange/trade/*'],
