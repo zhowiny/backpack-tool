@@ -37,8 +37,8 @@ export function useBackpackHelper() {
       return
     element.addEventListener('click', () => {
       if (type === 'Buy') {
-        countState.value.sellCount++
-        console.log(`%c第${countState.value.sellCount}次买入`, 'color: #afa;')
+        countState.value.buyCount++
+        console.log(`%c第${countState.value.buyCount}次买入`, 'color: #afa;')
       }
       else {
         countState.value.sellCount++
