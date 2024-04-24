@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   build: {
-    minify: true,
+    minify: false,
   },
   plugins: [
     vue(),
