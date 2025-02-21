@@ -7,6 +7,7 @@ import {
   getElement,
   getRandomWait,
   sleep,
+  triggerEvent,
 } from '@/utils/index.js'
 
 export function useBackpackHelper() {
@@ -14,6 +15,8 @@ export function useBackpackHelper() {
     buyCount: 0,
     sellCount: 0,
     cancelCount: 0,
+    longCount: 0,
+    shortCount: 0,
   })
 
   function getPriceCnt() {
@@ -32,20 +35,19 @@ export function useBackpackHelper() {
   }
 
   function clickTradeButton(type) {
-    const element = getElement(type, 'button')
+    const element = getElement(type, 'div', document.querySelector('form'))
     if (!element)
       return
-    element.addEventListener('click', () => {
-      if (type === 'Buy') {
-        countState.value.buyCount++
-        console.log(`%c第${countState.value.buyCount}次买入`, 'color: #afa;')
-      }
-      else {
-        countState.value.sellCount++
-        console.log(`%c第${countState.value.sellCount}次卖出`, 'color: #faf;')
-      }
-    }, { once: true })
-    element.click()
+    triggerEvent('click', element)
+
+    if (type === 'Buy') {
+      countState.value.buyCount++
+      console.log(`%c第${countState.value.buyCount}次买入`, 'color: #afa;')
+    }
+    else {
+      countState.value.sellCount++
+      console.log(`%c第${countState.value.sellCount}次卖出`, 'color: #faf;')
+    }
   }
 
   async function randomWaitFn(fn, ms) {
@@ -56,20 +58,43 @@ export function useBackpackHelper() {
   async function executeTrade(type, params) {
     if (!window.running)
       return console.log('已暂停')
-    await randomWaitFn(() => clickElementByText(type, 'p'))
-    await randomWaitFn(() => clickElementByText(params.mode || 'Limit', 'div'))
-    await randomWaitFn(() => setPrice(type, params[type]), 300)
-    await randomWaitFn(() => clickElementByText('Max', 'div'))
+    await randomWaitFn(
+      () => triggerEvent('mousedown', getElement('Market', 'button')),
+    )
+    await randomWaitFn(() => clickElementByText(type, 'div'))
+    // await randomWaitFn(() => clickElementByText(params.mode === 'Market' ? 'MKT' : 'Limit', 'div'))
+    // await randomWaitFn(() => setPrice(type, params[type]), 300)
+    await randomWaitFn(() => clickElementByText('100%', 'span'))
+
     await randomWaitFn(() => clickTradeButton(type))
   }
 
   async function performTradeCycle(params) {
     try {
-      await executeTrade('Buy', params)
-      await executeTrade('Sell', params)
+      if (params.random)
+        Math.random() > 0.5 ? await openLong() : await openShort()
+      else
+        params.type === 'long' ? await openLong() : await openShort()
     }
     catch (error) {
       console.error('发生错误:', error)
+    }
+
+    async function openLong() {
+      countState.value.longCount++
+      console.log(`%c---------第(${countState.value.longCount})次开多-----------`, 'color: #4caf50;')
+      await executeTrade('Buy', params)
+      params.interval > 0 && await sleep(params.interval * 1000)
+      await executeTrade('Sell', params)
+      console.log(`%c---------第(${countState.value.longCount})次开多结束-----------`, 'color: #4caf50;')
+    }
+    async function openShort() {
+      countState.value.shortCount++
+      console.log(`%c---------第(${countState.value.shortCount})次开空-----------`, 'color: #e53e3e;')
+      await executeTrade('Sell', params)
+      params.interval > 0 && await sleep(params.interval * 1000)
+      await executeTrade('Buy', params)
+      console.log(`%c---------第(${countState.value.shortCount})次开空结束-----------`, 'color: #e53e3e;')
     }
   }
 

@@ -8,10 +8,6 @@ import { sleep } from '@/utils/index.js'
 const {
   countState,
   performTradeCycle,
-  checkOrderTimeout,
-  getTabs,
-  getPriceElement,
-  getOrderList,
 } = useBackpackHelper()
 
 const expand = ref(true)
@@ -19,10 +15,11 @@ const running = ref(false)
 const tradingParams = ref({
   Buy: 2,
   Sell: 2,
-  timeout: 0,
+  interval: 5,
   mode: 'Market',
+  random: false,
+  type: 'long',
 })
-const currentOrder = ref([])
 
 function handleNumberInput(e, type, options = { min: 1, max: 20 }) {
   const { min, max } = options
@@ -40,86 +37,66 @@ async function startTrading() {
   if (running.value)
     window.requestAnimationFrame(() => startTrading())
 }
-async function queryOrderListTask() {
-  const { openOrderTab } = getTabs()
-  openOrderTab.click()
-  await sleep(300)
-  const orderList = getOrderList(tradingParams.value)
-  currentOrder.value = orderList
-  checkOrderTimeout(orderList)
-  await sleep(2000)
-  if (running.value)
-    window.requestAnimationFrame(() => queryOrderListTask())
-}
 
 async function handleStart() {
   window.running = running.value = !running.value
   console.log(running.value ? 'start' : 'stop')
 
   running.value && await startTrading()
-
-  running.value && await queryOrderListTask()
-
-  !running.value && getPriceElement('Buy', tradingParams.value.Buy).classList.remove('border')
-  !running.value && getPriceElement('Sell', tradingParams.value.Sell).classList.remove('border')
 }
 </script>
 
 <template>
   <div
-    class="backpack-tool transition grid gap-2 text-sm text-white bg-base-700 p-2 rounded relative"
+    class="backpack-tool bg-page border !border-buy transition grid gap-2 text-sm text-white p-2 rounded relative pointer-events-auto"
     :class="{ '-translate-y-[90%]': expand }"
     style="grid-template-areas: 'a a . .' 'a a . .' 'a a . .' 'a a . .' 'b b b b' '. . . .';"
   >
     <button
-      class="bg-greenText rounded p-2 h-12 self-center" style="grid-area: a;"
+      class="border !border-buy text-buy rounded-full p-2 h-12 self-center bg-primary-gradient text-button-primary" style="grid-area: a;"
       :class="{ 'bg-redText': running }"
       @click="handleStart"
     >
       {{ running ? '脚本运行中,点击关闭交易' : '启动脚本,点击开始交易' }}
     </button>
     <label>
-      <span>限价：</span>
-      <input v-model="tradingParams.mode" type="radio" value="Limit" :disabled="running">
+      <span class="opacity-30">限价：</span>
+      <input v-model="tradingParams.mode" type="radio" value="Limit" :disabled="true">
     </label>
     <label>
       <span>市场：</span>
-      <input v-model="tradingParams.mode" type="radio" value="Market" :disabled="running">
+      <input v-model="tradingParams.mode" type="radio" value="Market" :disabled="false">
     </label>
 
-    <span :class="{ 'opacity-10': tradingParams.mode === 'Market' }">第几个买入:</span>
+    <label>
+      <span :class="{ 'opacity-30': tradingParams.random }">开多：</span>
+      <input v-model="tradingParams.type" type="radio" value="long" :disabled="running || tradingParams.random">
+    </label>
+    <label>
+      <span :class="{ 'opacity-30': tradingParams.random }">开空：</span>
+      <input v-model="tradingParams.type" type="radio" value="short" :disabled="running || tradingParams.random">
+    </label>
+
+    <span>随机开多/空:</span>
+    <input v-model="tradingParams.random" class="self-start" type="checkbox" :disabled="running">
+
+    <span>间隔时间(秒):</span>
     <input
-      v-model.number="tradingParams.Buy"
-      class="w-12 h-2 py-2 text-center bg-black text-greenText"
-      :class="{ 'bg-black/25': running, 'opacity-10': tradingParams.mode === 'Market' }" type="number" :min="1" :max="20" :step="1"
-      :disabled="running || tradingParams.mode === 'Market'"
-      @input="e => handleNumberInput(e, 'Buy')"
-    >
-    <span :class="{ 'opacity-10': tradingParams.mode === 'Market' }">第几个卖出:</span>
-    <input
-      v-model.number="tradingParams.Sell"
-      class="w-12 h-2 py-2 text-center bg-black text-redText"
-      :class="{ 'bg-black/25': running, 'opacity-10': tradingParams.mode === 'Market' }" type="number" :min="1" :max="20" :step="1"
-      :disabled="running || tradingParams.mode === 'Market'"
-      @input="e => handleNumberInput(e, 'Sell')"
-    >
-    <span>超时时间(秒):</span>
-    <input
-      v-model.number="tradingParams.timeout" class="w-12 h-2 py-2 text-center bg-black text-accentBlue"
+      v-model.number="tradingParams.interval" class="w-12 h-2 py-2 text-center bg-black text-accentBlue"
       :class="{ 'bg-black/25': running }" type="number" :min="0" :max="600" :step="1"
       :disabled="running"
-      @input="e => handleNumberInput(e, 'timeout', { min: 0, max: 600 })"
+      @input="e => handleNumberInput(e, 'interval', { min: 0, max: 600 })"
     >
 
     <p class="mt-4 px-2 pt-2 border-t" style="grid-area: b;">
-      超时时间：超时自动取消订单，<code>0</code>为不取消！
+      间隔时间：开单,关单的间隔时间
     </p>
-    <div>当前订单数：{{ currentOrder.length }}</div>
-    <div>买入次数：<span style="color: #afa;">{{ countState.buyCount }}</span></div>
-    <div>卖出次数：<span style="color: #faf;">{{ countState.sellCount }}</span></div>
-    <div>取消次数：<span style="color: #ffa;">{{ countState.cancelCount }}</span></div>
+    <div>开多次数：<span style="color: #afa;">{{ countState.longCount }}</span></div>
+    <div>开空次数：<span style="color: #faf;">{{ countState.shortCount }}</span></div>
+    <div>买入次数：<span class="text-body-positive">{{ countState.buyCount }}</span></div>
+    <div>卖出次数：<span class="text-body-negative">{{ countState.sellCount }}</span></div>
     <div
-      class="cursor-pointer rounded-full bg-base-700 text-xs p-2 text-center absolute left-1/2 -translate-x-1/2 -bottom-5"
+      class="cursor-pointer bg-cube border-b !border-buy rounded-full bg-base-700 text-xs px-2 py-1 text-center absolute left-1/2 -translate-x-1/2 -bottom-5"
       @click="expand = !expand"
     >
       {{ expand ? '↓展开' : '↑收起' }}{{ running ? '(运行中...)' : '' }}

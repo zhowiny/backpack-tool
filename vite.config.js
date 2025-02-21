@@ -19,12 +19,12 @@ export default defineConfig({
     monkey({
       entry: 'src/main.js',
       userscript: {
-        name: 'backpack tool',
-        description: 'backpack script 刷成交量脚本,支持手动开启关闭,设置买入卖出点',
+        name: 'desk exchange tool',
+        description: 'desk exchange script 刷成交量脚本',
         author: 'zhowiny',
         namespace: 'https://github.com/zhowiny',
-        icon: 'https://backpack.exchange/favicon-32x32.png',
-        match: ['https://backpack.exchange/trade/*'],
+        icon: 'https://desk.exchange/icons/favicon.ico',
+        match: ['https://desk.exchange/trade/*'],
         require: [
         ],
       },
