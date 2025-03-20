@@ -32,5 +32,38 @@ export function clickElementByText(text, tag) {
   const element = getElement(text, tag)
   if (!element || !window.running)
     return
-  element.click()
+  triggerEvent(element)
+}
+
+export function triggerEvent(
+  element,
+  type = 'click',
+  position = ({ x, width, y, height }) => ({
+    x: x + (width * 0.5),
+    y: y + (height * 0.5),
+  }),
+) {
+  if (!element) {
+    console.warn('missing element')
+    return
+  }
+  const domRect = element.getBoundingClientRect()
+  let x = domRect.x
+  let y = domRect.y
+  if (typeof position === 'function') {
+    const pos = position(domRect)
+    x = pos.x
+    y = pos.y
+  }
+  else if (typeof position === 'object' && Object.keys(position).includes('x')) {
+    x = position.x
+    y = position.y
+  }
+  const evt = new MouseEvent(type, {
+    bubbles: true,
+    cancelable: true,
+    clientX: x,
+    clientY: y,
+  })
+  element.dispatchEvent(evt)
 }

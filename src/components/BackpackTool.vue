@@ -67,7 +67,7 @@ async function handleStart() {
 
 <template>
   <div
-    class="backpack-tool transition grid gap-2 text-sm text-white bg-base-700 p-2 rounded relative"
+    class="backpack-tool transition grid gap-2 text-sm text-white bg-base-700 p-2 rounded relative pointer-events-auto"
     :class="{ '-translate-y-[90%]': expand }"
     style="grid-template-areas: 'a a . .' 'a a . .' 'a a . .' 'a a . .' 'b b b b' '. . . .';"
   >
@@ -111,8 +111,11 @@ async function handleStart() {
       @input="e => handleNumberInput(e, 'timeout', { min: 0, max: 600 })"
     >
 
-    <p class="mt-4 px-2 pt-2 border-t" style="grid-area: b;">
+    <p class="text-xs mt-4 px-2 pt-2 border-t" style="grid-area: b;">
       超时时间：超时自动取消订单，<code>0</code>为不取消！
+      <span class="text-gray-500">
+        (author: <a class="hover:underline" href="https://x.com/ouyoung11" target="_blank">oooooyoung</a> & <a class="hover:underline" href="https://x.com/zhowiny" target="_blank">zhowiny</a>)
+      </span>
     </p>
     <div>当前订单数：{{ currentOrder.length }}</div>
     <div>买入次数：<span style="color: #afa;">{{ countState.buyCount }}</span></div>
