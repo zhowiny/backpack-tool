@@ -71,7 +71,7 @@ export function useBackpackHelper() {
       return console.log('已暂停')
     await randomWaitFn(() => clickElementByText(type, 'button'))
     await randomWaitFn(() => clickElementByText(params.mode || 'Limit', 'div'))
-    if (params.mode === 'Market')
+    if (params.mode === 'Limit')
       await randomWaitFn(() => setPrice(type, params[type]), 300)
 
     await randomWaitFn(() => setQuantity(0), 300)
