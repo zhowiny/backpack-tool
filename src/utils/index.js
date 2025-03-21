@@ -1,10 +1,11 @@
 export const LANG_MAP = {
-  Limit: '限制',
-  Market: '市场',
+  Limit: '限价',
+  Market: '市价',
   Max: '最大',
   Buy: '购买',
   Sell: '出售',
   Cancel: '取消',
+  Balances: '余额',
 }
 
 export const MIN_WAIT_MS = 300

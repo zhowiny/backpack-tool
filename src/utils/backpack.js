@@ -33,7 +33,10 @@ export function useBackpackHelper() {
   }
 
   async function setQuantity(percent = 0) {
-    const slider = document.querySelector('div[aria-label="Percentage Slider"] > div.h-1')
+    let slider = document.querySelector('div[aria-label="Percentage Slider"] > div.h-1')
+    if (!slider) {
+      slider = document.querySelector('div[aria-label="百分比滑块"] > div.h-1')
+    }
     const calcPosition = ({ x, width, y, height }) => ({
       x: x + width * percent,
       y: y + height * 0.5,
@@ -116,7 +119,7 @@ export function useBackpackHelper() {
       tabsElement,
     }
   }
-  const getOrderListElement = tabsElement => tabsElement.parentElement.parentElement.nextElementSibling.querySelector('tbody')
+  const getOrderListElement = tabsElement => tabsElement.parentElement.parentElement.parentElement.querySelector('tbody')
 
   function getOrderList(tradingParams) {
     const element = getOrderListElement(getTabs().tabsElement)
